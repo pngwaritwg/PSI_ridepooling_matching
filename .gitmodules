@@ -1,0 +1,3 @@
+[submodule "QuickPool"]
+    path = QuickPool
+    url = https://github.com/cris-coders-iisc/QuickPool.git
