@@ -4,6 +4,7 @@ This project build on top of QuickPool so you can follows its installation guide
 For demo purpose, we mock input from driver and rider with triples generation app.
 - User can act as a driver or rider to input their start and end position to create route triples to the database(mongoDB)
 - Modified original QuickPool code fetch these triples from the db into its PSI with a third party (third party PSI).
+Further explaination can be found in slides: https://docs.google.com/presentation/d/1HIrOMiZK4FcA88VesIeRQKzkMVmp_dyIA_9d5xN4dH4/edit?usp=sharing
 
 # Original QuickPool Overview
 - Basically, the original QuickPool simulates each party in the third party PSI: private computation and communication between them
