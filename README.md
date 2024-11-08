@@ -96,7 +96,7 @@ Execute the following commands from the `QuickPool` directory created during com
 ```
 
 ## Replicate results in the slides
-You can try an example sequence of request here from places in Chiangemai. The output of adjacency matrix is logged in the end of application_logs/output.log.
+You can try an example sequence of request here from places in Chiangmai. The output of adjacency matrix is logged in the end of application_logs/output.log.
 ```
 0 0 1
 1 0 0
