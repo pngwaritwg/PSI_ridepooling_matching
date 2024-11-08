@@ -1,12 +1,21 @@
 # PSI ridepooling matching
 
-This project build on top of QuickPool so you can follows its installation guide + additional external dependencies.
-For demo purpose, we mock input from driver and rider with triples generation app.
+Explore Private Set Intersection (PSI) with an inputless third party which could improve the standard two-party PSI (2P PSI) and is more practical in some usecases like ridepooling matching. The matching checks if the cardinality of route (a set of connecting edges) intersection is over a threshold. Traditionally, a rider/driver generate the route and provide it to the trusted third party. There is also other method for matching like point-based matching but it is not the focus here. A Privacy breaches can lead to identity theft, phishing, or malicious misuse by employees for personal gain. A solution to this is 2P PSI ride pooling. However, it suffers data leakage between parties because it runs matching on every pairs then sends all the possible matches for each party——each rider knows all matched driver and vice versa. Moreover, variants of 2P PSI like the standard 2P PSI and 2P threshold PSI has high computational or performance overhead. An interesting solution is to use a PSI with a third party (modeled as a semi-honest adversary). Work from https://eprint.iacr.org/2024/1109 proposed a protocol with security analysis and performance benchmarks. Our contribution is to extend to handle time of the ride, flexibility, route flexibility. Also, we create a simple demo to show how this can work with real data (route based on Openstreetmap's road network). A full system of multiple riders, drivers and a third party server with practical interactions are not implemented though a possible system is presented as an idea.
+
+This project consists of 2 parts: modification of QuickPool's code, a triples generation code.
 - User can act as a driver or rider to input their start and end position to create route triples to the database(mongoDB)
-- Modified original QuickPool code fetch these triples from the db into its PSI with a third party (third party PSI).
+- Modified QuickPool's code fetch these triples from the db into its PSI with a third party (third party PSI).
+    - Note that, this is just to mock input from rider and driver not real system.
+
 Further explaination can be found in slides: https://docs.google.com/presentation/d/1HIrOMiZK4FcA88VesIeRQKzkMVmp_dyIA_9d5xN4dH4/edit?usp=sharing
 
-# Original QuickPool Overview
+## Table of Contents
+- [Overview](#overview)
+- [Installation](#installation)
+- [Usage](#usage)
+
+## Overview
+### Original QuickPool
 - Basically, the original QuickPool simulates each party in the third party PSI: private computation and communication between them
 - Private route from rider and driver are multiple tuples of integer (v_i, v_(i+1))
 - There are several implementation of PSI with 3rd party. The one we are interested use EMP (Efficient Multi-Party computation) framework’s block to encapsulate a 128 bit data (each tuple in the route tuples) from rider and driver
@@ -14,15 +23,15 @@ Further explaination can be found in slides: https://docs.google.com/presentatio
 - For masking its input before sending it to the 3rd party to compute EMP’s PRP based on the AES
 - The 3rd party compute the match but it haven't implemented the last communication to each rider and driver corresponding to the match
 
-# Modification of QuickPool
+### Modification of QuickPool
 - Instead of tuples, routes are now represented as multiple triples (v_i, v_(i+threshold), t_(i+time flexibility)) into 
 EMP's block(v_i || v_(i+threshold) || t_(i+time flexibility))
     - The node from the Openstreetmap is represented by 64 bit integer
-    - We make the v_i, v_(i+threshold) to be fit within 42 bit by manipulating the node to node - min_node(local road network) in the triples generation app. also t_(i+time flexibility) is represent by integer (-max time flexibility, minutes away from 12:00 am + max time flexibilty) which fits in 42 bit
-        - (Haven't implemented) here we can change from 42 bit || 42 bit || 42 bit to 58 bit || 58 bit || 12 bit
+    - We make the v_i, v_(i+threshold) to be fit within 42 bit by manipulating the node to node - min_node(local road network) in the triples generation app. also t_(i+time flexibility) is represented by integer (-max time flexibility, minutes away from 12:00 am + max time flexibilty) which fits in 42 bit
+        - (Possible implementation) here we can change from 42 bit || 42 bit || 42 bit to 58 bit || 58 bit || 12 bit
     - Then follows the same steps from original QuickPool
 
-# Triples generation 
+### Triples generation 
 - A python app where it recieves a request with the form like
 ```
 {
@@ -46,35 +55,32 @@ where c is intersection threshold, k is time flexibilty
 where id is just unique mongoDB's generated id
 - Plot the route over a map for later visualization
 
-## Additional External Dependencies
+
+## Installation
+
+### For modified QuickPool
+Follow installation guide from Quickpool then install the additional external dependencies.
+
+#### Additional External Dependencies
+
 - [mongocxx](https://www.mongodb.com/docs/languages/cpp/cpp-driver/current/get-started/download-and-install/)
 
-### Docker
-Execute the following commands from the `QuickPool` directory
+### For the triples generation app
+Install all the requirements in the requirements.txt of the root directory.
+Execute at the following in the root directory
 ```sh
-# Build the QuickPool Docker image.
-#
-# Building the Docker image requires at least 4GB RAM. This needs to be set 
-# explicitly in case of Windows and MacOS.
-docker build -t quickpool .
-
-# Create and run a container.
-#
-# This should start the shell from within the container.
-docker run -it -v $PWD:/code quickpool
-
-# The following command changes the working directory to the one containing the 
-# source code and should be run on the shell started using the previous command.
-cd /code
+pip install -r requirements.txt
 ```
 
-## Run the triples generation app
+## Usage
+
+### Run the triples generation app
 Execute the following commands from the root directory
 ```sh
 python app.py
 ```
 
-## Compilation
+### Compilation of modified QuickPool
 Execute the following commands from the `QuickPool` directory
 ```sh
 mkdir build && cd build
@@ -89,8 +95,13 @@ Execute the following commands from the `QuickPool` directory created during com
 ./run_quickpool.sh 3 3
 ```
 
-## Replicate results
-You can try an example sequence of request here from places in Chiangemai
+## Replicate results in the slides
+You can try an example sequence of request here from places in Chiangemai. The output of adjacency matrix is logged in the end of application_logs/output.log.
+```
+0 0 1
+1 0 0
+0 1 0
+```
 1. invis garden -> sting hive
 ```
 {
